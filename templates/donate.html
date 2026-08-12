@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Donate Medicine</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<h1>Donate Medicine</h1>
+
+<form action="/donate" method="POST" enctype="multipart/form-data">
+
+    <label>Medicine Name</label><br>
+   <input type="text" name="medicine_name" placeholder="Enter medicine name">
+    <br><br>
+
+
+    <label>Upload Medicine Image</label><br>
+    <input type="file" name="medicine_image" accept="image/*">
+    <br><br>
+
+
+    <label>Expiry Date</label><br>
+    <input type="date" name="expiry_date">
+    <br><br>
+
+
+    <label>Quantity</label><br>
+    <input type="number" name="quantity">
+    <br><br>
+
+
+    <label>Medicine Condition</label><br>
+
+    <select name="condition">
+        <option>Sealed</option>
+        <option>Open</option>
+    </select>
+
+    <br><br>
+
+
+    <button type="submit">
+        Submit Donation
+    </button>
+
+
+</form>
+
+
+</body>
+
+</html>

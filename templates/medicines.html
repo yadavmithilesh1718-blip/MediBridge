@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Saved Medicines</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<h1>Saved Medicines</h1>
+
+<table border="1" cellpadding="10">
+
+<tr>
+    <th>ID</th>
+    <th>Medicine Name</th>
+    <th>Expiry Date</th>
+    <th>Quantity</th>
+    <th>Condition</th>
+</tr>
+
+{% for medicine in medicines %}
+
+<tr>
+
+    <td>{{ medicine[0] }}</td>
+    <td>{{ medicine[1] }}</td>
+    <td>{{ medicine[2] }}</td>
+    <td>{{ medicine[3] }}</td>
+    <td>{{ medicine[4] }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</body>
+</html>
