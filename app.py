@@ -72,27 +72,24 @@ def home():
     connection = sqlite3.connect("medibridge.db")
     cursor = connection.cursor()
 
-    # Total medicines
+    # Total Medicines
     cursor.execute("SELECT COUNT(*) FROM medicine")
     total_medicines = cursor.fetchone()[0]
 
-    # Total quantity
+    # Total Quantity
     cursor.execute("""
         SELECT COALESCE(SUM(quantity), 0)
         FROM medicine
     """)
     total_quantity = cursor.fetchone()[0]
 
-    # Medicines for expiry calculation
+    # Expiry Dates
     cursor.execute("""
         SELECT expiry_date
         FROM medicine
     """)
     medicines = cursor.fetchall()
 
-    connection.close()
-
-    # Expiry statistics
     today = datetime.today().date()
 
     valid_medicines = 0
@@ -121,15 +118,55 @@ def home():
         except (ValueError, TypeError):
             pass
 
+    # Request Notifications
+    notifications = []
+
+    if "user_id" in session:
+
+        cursor.execute("""
+            SELECT
+                medicine.medicine_name,
+                medicine_requests.status
+            FROM medicine_requests
+            JOIN medicine
+                ON medicine_requests.medicine_id = medicine.id
+            WHERE medicine_requests.requester_id = ?
+            AND medicine_requests.status != 'Pending'
+            ORDER BY medicine_requests.id DESC
+        """, (
+            session["user_id"],
+        ))
+
+        request_notifications = cursor.fetchall()
+
+        for notification in request_notifications:
+
+            medicine_name = notification[0]
+            status = notification[1]
+
+            if status == "Accepted":
+
+                notifications.append(
+                    f"🟢 Your request for {medicine_name} has been accepted."
+                )
+
+            elif status == "Rejected":
+
+                notifications.append(
+                    f"🔴 Your request for {medicine_name} has been rejected."
+                )
+
+    connection.close()
+
     return render_template(
         "index.html",
         total_medicines=total_medicines,
         valid_medicines=valid_medicines,
         expiring_soon=expiring_soon,
         expired_medicines=expired_medicines,
-        total_quantity=total_quantity
+        total_quantity=total_quantity,
+        notifications=notifications
     )
-
 
 # Donate Medicine - Login Required
 @app.route("/donate", methods=["GET", "POST"])
@@ -590,6 +627,131 @@ def request_medicine(medicine_id):
 
     return "Medicine request sent successfully!"
 
+# My Medicine Requests
+@app.route("/my-requests")
+def my_requests():
+
+    if "user_id" not in session:
+        return redirect("/login")
+
+    connection = sqlite3.connect("medibridge.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            medicine_requests.id,
+            medicine.medicine_name,
+            medicine.expiry_date,
+            medicine_requests.status
+        FROM medicine_requests
+        JOIN medicine
+        ON medicine_requests.medicine_id = medicine.id
+        WHERE medicine_requests.requester_id = ?
+    """, (
+        session["user_id"],
+    ))
+
+    requests = cursor.fetchall()
+
+    connection.close()
+
+    return render_template(
+        "my_requests.html",
+        requests=requests
+    )
+
+
+# Donor Requests
+@app.route("/donor-requests")
+def donor_requests():
+
+    if "user_id" not in session:
+        return redirect("/login")
+
+    connection = sqlite3.connect("medibridge.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            medicine_requests.id,
+            medicine.medicine_name,
+            users.name,
+            medicine_requests.status
+        FROM medicine_requests
+        JOIN medicine
+            ON medicine_requests.medicine_id = medicine.id
+        JOIN users
+            ON medicine_requests.requester_id = users.id
+        WHERE medicine.user_id = ?
+    """, (
+        session["user_id"],
+    ))
+
+    requests = cursor.fetchall()
+
+    connection.close()
+
+    return render_template(
+        "donor_requests.html",
+        requests=requests
+    )
+
+
+# Accept / Reject Medicine Request
+@app.route("/update-request/<int:request_id>/<action>")
+def update_request(request_id, action):
+
+    if "user_id" not in session:
+        return redirect("/login")
+
+    connection = sqlite3.connect("medibridge.db")
+    cursor = connection.cursor()
+
+    # Check request and verify that the logged-in user
+    # is the owner of the requested medicine
+    cursor.execute("""
+        SELECT medicine_requests.id
+        FROM medicine_requests
+        JOIN medicine
+            ON medicine_requests.medicine_id = medicine.id
+        WHERE medicine_requests.id = ?
+        AND medicine.user_id = ?
+    """, (
+        request_id,
+        session["user_id"]
+    ))
+
+    request_data = cursor.fetchone()
+
+    if request_data is None:
+        connection.close()
+        return "Request not found or you are not allowed to update it."
+
+    # Decide new status
+    if action == "accept":
+        new_status = "Accepted"
+
+    elif action == "reject":
+        new_status = "Rejected"
+
+    else:
+        connection.close()
+        return "Invalid action."
+
+    # Update request status
+    cursor.execute("""
+        UPDATE medicine_requests
+        SET status = ?
+        WHERE id = ?
+    """, (
+        new_status,
+        request_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+    return redirect("/donor-requests")
 # Run Application
 if __name__ == "__main__":
     app.run(debug=True)

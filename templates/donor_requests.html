@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Donor Requests - MediBridge</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        nav {
+            background: white;
+            padding: 18px 8%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        nav h2 {
+            margin: 0;
+            color: #2563eb;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #374151;
+            margin-left: 20px;
+            font-size: 14px;
+        }
+
+        nav a:hover {
+            color: #2563eb;
+        }
+
+        .container {
+            width: 84%;
+            margin: 50px auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 35px;
+        }
+
+        .table-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        th {
+            background: #f3f4f6;
+            padding: 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+
+        .pending {
+            color: #d97706;
+            font-weight: bold;
+        }
+
+        .accepted {
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .rejected {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        /* Action Buttons */
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 9px 14px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .accept-btn {
+            background: #16a34a;
+            color: white;
+        }
+
+        .accept-btn:hover {
+            background: #15803d;
+        }
+
+        .reject-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .reject-btn:hover {
+            background: #b91c1c;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        @media (max-width: 700px) {
+
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            nav a {
+                margin-left: 8px;
+                margin-right: 8px;
+            }
+
+            .container {
+                width: 92%;
+            }
+
+            .table-box {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav>
+
+    <h2>💊 MediBridge</h2>
+
+    <div>
+        <a href="/">Home</a>
+        <a href="/donate">Donate</a>
+        <a href="/medicines">Medicines</a>
+        <a href="/my-requests">My Requests</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+</nav>
+
+
+<div class="container">
+
+    <h1>📩 Donor Requests</h1>
+
+    <p class="subtitle">
+        Manage requests received for your donated medicines.
+    </p>
+
+
+    <div class="table-box">
+
+        {% if requests %}
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Medicine Name</th>
+                    <th>Requested By</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for request in requests %}
+
+                <tr>
+
+                    <td>
+                        {{ loop.index }}
+                    </td>
+
+                    <td>
+                        <strong>{{ request[1] }}</strong>
+                    </td>
+
+                    <td>
+                        {{ request[2] }}
+                    </td>
+
+                    <td>
+
+                        {% if request[3] == "Pending" %}
+
+                            <span class="pending">
+                                🟠 Pending
+                            </span>
+
+                        {% elif request[3] == "Accepted" %}
+
+                            <span class="accepted">
+                                🟢 Accepted
+                            </span>
+
+                        {% elif request[3] == "Rejected" %}
+
+                            <span class="rejected">
+                                🔴 Rejected
+                            </span>
+
+                        {% else %}
+
+                            {{ request[3] }}
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if request[3] == "Pending" %}
+
+                            <div class="actions">
+
+                                <a href="/update-request/{{ request[0] }}/accept"
+                                   class="action-btn accept-btn">
+                                    ✅ Accept
+                                </a>
+
+                                <a href="/update-request/{{ request[0] }}/reject"
+                                   class="action-btn reject-btn">
+                                    ❌ Reject
+                                </a>
+
+                            </div>
+
+                        {% else %}
+
+                            <span style="color:#6b7280;">
+                                No Action
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        {% else %}
+
+        <div class="empty">
+
+            <h3>📭 No Requests Yet</h3>
+
+            <p>
+                No one has requested your donated medicines yet.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<footer>
+    © 2026 MediBridge | Don't Waste Medicines, Save Lives
+</footer>
+
+</body>
+</html>

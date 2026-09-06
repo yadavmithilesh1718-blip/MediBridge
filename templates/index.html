@@ -21,6 +21,16 @@
             <a href="/">Home</a>
             <a href="/donate">Donate</a>
             <a href="/medicines">Medicines</a>
+            {% if session.get("user_id") %}
+    <a href="/#notifications">
+        🔔 Notifications
+        {% if notifications %}
+            <span class="notification-count">
+                {{ notifications|length }}
+            </span>
+        {% endif %}
+    </a>
+{% endif %}
 
             {% if session.get("user_id") %}
 
@@ -61,6 +71,35 @@
         </div>
 
     </section>
+
+ 
+
+```html
+    <!-- Notifications -->
+
+    {% if notifications %}
+
+    <section class="notifications" id="notifications">
+
+        <h2>🔔 Notifications</h2>
+
+        <div class="notification-list">
+
+            {% for notification in notifications %}
+
+            <div class="notification-card">
+                {{ notification }}
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    {% endif %}
+```
+
 
 
     <!-- Dashboard Statistics -->
