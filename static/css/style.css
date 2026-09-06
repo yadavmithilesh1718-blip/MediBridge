@@ -112,3 +112,102 @@ footer{
     padding:20px;
     margin-top:50px;
 }
+
+/* ============================= */
+/* MediBridge Dashboard */
+/* ============================= */
+
+.dashboard {
+    padding: 50px 8%;
+    text-align: center;
+}
+
+.dashboard h2 {
+    font-size: 30px;
+    margin-bottom: 30px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+}
+
+.stat-card {
+    background: white;
+    padding: 25px 15px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card h3 {
+    font-size: 32px;
+    margin: 0 0 10px;
+}
+
+.stat-card h4 {
+    font-size: 16px;
+    margin: 0 0 10px;
+}
+
+.stat-card p {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Responsive */
+
+@media (max-width: 1000px) {
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* View Button */
+
+.view-btn {
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    background: #16a34a;
+    color: white;
+}
+
+.view-btn:hover {
+    background: #15803d;
+}
+
+
+
+/* Request Button */
+
+.request-btn {
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    background: #2563eb;
+    color: white;
+}
+
+.request-btn:hover {
+    background: #1d4ed8;
+}

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Medicine Details - MediBridge</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav>
+
+        <h2>MediBridge</h2>
+
+        <div class="menu">
+
+            <a href="/">Home</a>
+            <a href="/donate">Donate</a>
+            <a href="/medicines">Medicines</a>
+
+            {% if session.get("user_id") %}
+
+                <span>👋 Welcome, {{ session.get("user_name") }}</span>
+                <a href="/logout">Logout</a>
+
+            {% else %}
+
+                <a href="/login">Login</a>
+
+            {% endif %}
+
+        </div>
+
+    </nav>
+
+
+    <!-- Medicine Details -->
+
+    <section class="medicine-details">
+
+        <h1>💊 Medicine Details</h1>
+
+        <div class="medicine-card">
+
+            <!-- Medicine Image -->
+
+            <div class="medicine-image">
+
+                {% if medicine[5] %}
+
+                    <img src="{{ url_for('uploaded_file',
+                                         filename=medicine[5]) }}"
+                         alt="{{ medicine[1] }}">
+
+                {% else %}
+
+                    <div class="no-image">
+                        📦
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- Medicine Information -->
+
+            <div class="medicine-info">
+
+                <h2>{{ medicine[1] }}</h2>
+
+                <p>
+                    <strong>📅 Expiry Date:</strong>
+                    {{ medicine[2] }}
+                </p>
+
+                <p>
+                    <strong>📦 Quantity:</strong>
+                    {{ medicine[3] }}
+                </p>
+
+                <p>
+                    <strong>🏷️ Condition:</strong>
+                    {{ medicine[4] }}
+                </p>
+
+                <p>
+                    <strong>🔎 Expiry Status:</strong>
+
+                    {% if expiry_status == "Expired" %}
+
+                        <span class="expired">
+                            🔴 Expired
+                        </span>
+
+                    {% elif expiry_status == "Expiring Soon" %}
+
+                        <span class="expiring">
+                            🟠 Expiring Soon
+                        </span>
+
+                    {% else %}
+
+                        <span class="valid">
+                            🟢 Valid
+                        </span>
+
+                    {% endif %}
+
+                </p>
+
+                <a href="/medicines" class="back-btn">
+                    ← Back to Medicines
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Footer -->
+
+    <footer>
+
+        <p>
+            © 2026 MediBridge | Don't Waste Medicines, Save Lives
+        </p>
+
+    </footer>
+
+</body>
+
+</html>

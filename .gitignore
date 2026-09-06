@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+
+medibridge.db
+
+check_user.py
+
+uploads/

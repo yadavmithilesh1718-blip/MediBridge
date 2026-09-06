@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Edit Medicine</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<h1>Edit Medicine</h1>
+
+<form action="/edit/{{ medicine[0] }}" method="POST">
+
+    <label>Medicine Name</label><br>
+
+    <input
+        type="text"
+        name="medicine_name"
+        value="{{ medicine[1] }}"
+        required
+    >
+
+    <br><br>
+
+
+    <label>Expiry Date</label><br>
+
+    <input
+        type="date"
+        name="expiry_date"
+        value="{{ medicine[2] }}"
+        required
+    >
+
+    <br><br>
+
+
+    <label>Quantity</label><br>
+
+    <input
+        type="number"
+        name="quantity"
+        value="{{ medicine[3] }}"
+        required
+    >
+
+    <br><br>
+
+
+    <label>Medicine Condition</label><br>
+
+    <select name="condition">
+
+        <option value="Sealed"
+            {% if medicine[4] == "Sealed" %}selected{% endif %}>
+            Sealed
+        </option>
+
+        <option value="Open"
+            {% if medicine[4] == "Open" %}selected{% endif %}>
+            Open
+        </option>
+
+    </select>
+
+    <br><br>
+
+
+    <button type="submit">
+        Update Medicine
+    </button>
+
+</form>
+
+</body>
+
+</html>

@@ -17,10 +17,22 @@
         <h2>MediBridge</h2>
 
         <div class="menu">
+
             <a href="/">Home</a>
             <a href="/donate">Donate</a>
             <a href="/medicines">Medicines</a>
-            <a href="#">Login</a>
+
+            {% if session.get("user_id") %}
+
+                <span>👋 Welcome, {{ session.get("user_name") }}</span>
+                <a href="/logout">Logout</a>
+
+            {% else %}
+
+                <a href="/login">Login</a>
+
+            {% endif %}
+
         </div>
 
     </nav>
@@ -49,6 +61,49 @@
         </div>
 
     </section>
+
+
+    <!-- Dashboard Statistics -->
+
+<section class="dashboard">
+
+    <h2>MediBridge Dashboard</h2>
+
+    <div class="stats">
+
+        <div class="stat-card">
+            <h3>💊</h3>
+            <h4>Total Medicines</h4>
+            <p>{{ total_medicines }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>🟢</h3>
+            <h4>Valid Medicines</h4>
+            <p>{{ valid_medicines }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>🟠</h3>
+            <h4>Expiring Soon</h4>
+            <p>{{ expiring_soon }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>🔴</h3>
+            <h4>Expired Medicines</h4>
+            <p>{{ expired_medicines }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>📦</h3>
+            <h4>Total Quantity</h4>
+            <p>{{ total_quantity }}</p>
+        </div>
+
+    </div>
+
+</section>
 
 
     <!-- Features -->

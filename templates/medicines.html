@@ -1,42 +1,456 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Saved Medicines</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Find Medicines | MediBridge</title>
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #222;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1200px;
+            margin: 40px auto;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin-bottom: 8px;
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #666;
+            margin-top: 0;
+        }
+
+        .search-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-form input {
+            flex: 1;
+            padding: 13px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .search-form input:focus {
+            border-color: #2563eb;
+        }
+
+        .search-form button {
+            padding: 13px 22px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .search-form button:hover {
+            background: #1d4ed8;
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th {
+            background: #f1f5f9;
+            color: #374151;
+            text-align: left;
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #fafafa;
+        }
+
+        .medicine-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .no-image {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            border-radius: 8px;
+            color: #777;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .medicine-name {
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .condition {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-btn,
+        .delete-btn {
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .edit-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .delete-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+        }
+
+        @media (max-width: 700px) {
+
+            .container {
+                width: 95%;
+                margin: 25px auto;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .search-form button {
+                width: 100%;
+            }
+        }
+
+    </style>
+
 </head>
+
 
 <body>
 
-<h1>Saved Medicines</h1>
+<div class="container">
 
-<table border="1" cellpadding="10">
+    <!-- Header -->
 
-<tr>
-    <th>ID</th>
-    <th>Medicine Name</th>
-    <th>Expiry Date</th>
-    <th>Quantity</th>
-    <th>Condition</th>
-</tr>
+    <div class="header">
 
-{% for medicine in medicines %}
+        <h1>💊 Find Medicines</h1>
 
-<tr>
+        <p>
+            Search for available medicines and help prevent medicine wastage.
+        </p>
 
-    <td>{{ medicine[0] }}</td>
-    <td>{{ medicine[1] }}</td>
-    <td>{{ medicine[2] }}</td>
-    <td>{{ medicine[3] }}</td>
-    <td>{{ medicine[4] }}</td>
+    </div>
 
-</tr>
 
-{% endfor %}
+    <!-- Search -->
 
-</table>
+    <div class="search-box">
+
+        <form action="/medicines"
+              method="GET"
+              class="search-form">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="🔍 Search medicine by name..."
+                value="{{ search }}"
+            >
+
+            <button type="submit">
+                Search
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- Medicines -->
+
+    <div class="table-wrapper">
+
+        {% if medicines %}
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>No.</th>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>Medicine Name</th>
+                    <th>Expiry Date</th>
+                    <th>Quantity</th>
+                    <th>Condition</th>
+                    <th>Action</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+            {% for medicine in medicines %}
+
+            <tr>
+
+                <!-- Serial Number -->
+
+                <td>
+                    {{ loop.index }}
+                </td>
+
+
+                <!-- Database ID -->
+
+                <td>
+                    {{ medicine[0] }}
+                </td>
+
+
+                <!-- Image -->
+
+                <td>
+
+                    {% if medicine[5] %}
+
+                        <img
+                            src="{{ url_for('uploaded_file', filename=medicine[5]) }}"
+                            class="medicine-image"
+                            alt="Medicine Image"
+                        >
+
+                    {% else %}
+
+                        <div class="no-image">
+                            No Image
+                        </div>
+
+                    {% endif %}
+
+                </td>
+
+
+                <!-- Medicine Name -->
+
+                <td class="medicine-name">
+                    {{ medicine[1] }}
+                </td>
+
+
+                <!-- Expiry -->
+
+               <td>
+    {{ medicine[2] }}
+
+    {% if medicine[7] == "Expired" %}
+        <span style="color: red; font-weight: bold;">
+            🔴 Expired
+        </span>
+
+    {% elif medicine[7] == "Expiring Soon" %}
+        <span style="color: orange; font-weight: bold;">
+            🟠 Expiring Soon
+        </span>
+
+    {% else %}
+        <span style="color: green; font-weight: bold;">
+            🟢 Valid
+        </span>
+    {% endif %}
+</td>
+
+
+                <!-- Quantity -->
+
+                <td>
+                    {{ medicine[3] }}
+                </td>
+
+
+                <!-- Condition -->
+
+                <td>
+
+                    <span class="condition">
+                        {{ medicine[4] }}
+                    </span>
+
+                </td>
+
+
+             <!-- Actions -->
+
+<td>
+
+    <div class="actions">
+
+        {% if session.get("user_id") == medicine[6] %}
+
+            <a
+                href="/view/{{ medicine[0] }}"
+                class="view-btn"
+            >
+                View
+            </a>
+
+            <a
+                href="/edit/{{ medicine[0] }}"
+                class="edit-btn"
+            >
+                Edit
+            </a>
+
+            <a
+                href="/delete/{{ medicine[0] }}"
+                class="delete-btn"
+                onclick="return confirm('Are you sure you want to delete this medicine?');"
+            >
+                Delete
+            </a>
+
+      {% else %}
+
+    <a
+        href="/view/{{ medicine[0] }}"
+        class="view-btn"
+    >
+        View
+    </a>
+
+    {% if session.get("user_id") %}
+
+        <a
+            href="/request-medicine/{{ medicine[0] }}"
+            class="request-btn"
+        >
+            Request
+        </a>
+
+    {% endif %}
+
+{% endif %}
+    </div>
+
+</td>
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        {% else %}
+
+            <div class="empty-message">
+
+                <h3>💊 No medicines found</h3>
+
+                <p>
+                    Try searching with a different medicine name.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
 
 </body>
+
 </html>
