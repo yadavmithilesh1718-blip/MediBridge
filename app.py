@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_from_directory, redirect, session
+from flask import Flask, render_template, request, send_from_directory, redirect, session ,flash
 import sqlite3
 import os
 from datetime import datetime
@@ -556,11 +556,6 @@ def delete_medicine(medicine_id):
         if os.path.exists(image_path):
             os.remove(image_path)
 
-    print("Medicine Deleted:", medicine_id)
-
-    return redirect("/medicines")
-
-
 # Request Medicine - Login Required
 @app.route("/request-medicine/<int:medicine_id>")
 def request_medicine(medicine_id):
@@ -573,7 +568,7 @@ def request_medicine(medicine_id):
 
     # Check medicine exists
     cursor.execute(
-        "SELECT id, medicine_name, user_id FROM medicine WHERE id = ?",
+        "SELECT id, medicine_name, expiry_date, user_id FROM medicine WHERE id = ?",
         (medicine_id,)
     )
 
@@ -584,9 +579,34 @@ def request_medicine(medicine_id):
         return "Medicine not found"
 
     # Owner apni medicine khud request nahi kar sakta
-    if medicine[2] == session["user_id"]:
+    if medicine[3] == session["user_id"]:
         connection.close()
         return "You cannot request your own medicine."
+
+    # Expired medicine ko request nahi kar sakte
+    try:
+        expiry_date = datetime.strptime(
+            medicine[2],
+            "%Y-%m-%d"
+        ).date()
+
+        today = datetime.today().date()
+
+        if expiry_date < today:
+            connection.close()
+            flash(
+                "This medicine has expired and cannot be requested.",
+                "error"
+            )
+            return redirect("/")
+
+    except (ValueError, TypeError):
+        connection.close()
+        flash(
+            "Invalid expiry date. Medicine cannot be requested.",
+            "error"
+        )
+        return redirect("/")
 
     # Check if request already exists
     cursor.execute("""
@@ -602,7 +622,11 @@ def request_medicine(medicine_id):
 
     if existing_request:
         connection.close()
-        return "You have already requested this medicine."
+        flash(
+            "You have already requested this medicine.",
+            "error"
+        )
+        return redirect("/")
 
     # Create request
     cursor.execute("""
@@ -625,7 +649,41 @@ def request_medicine(medicine_id):
         session["user_id"]
     )
 
-    return "Medicine request sent successfully!"
+    flash(
+        "Medicine request sent successfully!",
+        "success"
+    )
+
+    return redirect("/")
+    print("Medicine Deleted:", medicine_id)
+
+    return redirect("/medicines")
+
+
+   
+    # Create request
+    cursor.execute("""
+        INSERT INTO medicine_requests
+        (medicine_id, requester_id, status)
+        VALUES (?, ?, ?)
+    """, (
+        medicine_id,
+        session["user_id"],
+        "Pending"
+    ))
+
+    connection.commit()
+    connection.close()
+
+    print(
+        "Medicine Request Created:",
+        medicine_id,
+        "Requester:",
+        session["user_id"]
+    )
+
+    flash("Medicine request sent successfully!", "success")
+    return redirect("/")
 
 # My Medicine Requests
 @app.route("/my-requests")

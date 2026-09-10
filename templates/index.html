@@ -72,10 +72,22 @@
 
     </section>
 
- 
+ {% with messages = get_flashed_messages(with_categories=true) %}
 
-```html
-    <!-- Notifications -->
+    {% if messages %}
+
+        {% for category, message in messages %}
+
+            <div class="flash-message">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+  {% endwith %}
+  <!-- Notifications -->
 
     {% if notifications %}
 
@@ -98,11 +110,8 @@
     </section>
 
     {% endif %}
-```
 
-
-
-    <!-- Dashboard Statistics -->
+  <!-- Dashboard Statistics -->
 
 <section class="dashboard">
 
