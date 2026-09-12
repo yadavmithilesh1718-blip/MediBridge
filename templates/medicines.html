@@ -273,6 +273,7 @@
                     <th>Expiry Date</th>
                     <th>Quantity</th>
                     <th>Condition</th>
+                    <th>Verification</th>
                     <th>Action</th>
                 </tr>
 
@@ -331,15 +332,15 @@
 
                 <!-- Expiry -->
 
-               <td>
+              <td>
     {{ medicine[2] }}
 
-    {% if medicine[7] == "Expired" %}
+    {% if medicine[8] == "Expired" %}
         <span style="color: red; font-weight: bold;">
             🔴 Expired
         </span>
 
-    {% elif medicine[7] == "Expiring Soon" %}
+    {% elif medicine[8] == "Expiring Soon" %}
         <span style="color: orange; font-weight: bold;">
             🟠 Expiring Soon
         </span>
@@ -361,13 +362,50 @@
 
                 <!-- Condition -->
 
-                <td>
+               <td><span class="condition">{{ medicine[4] }}</span></td>
 
-                    <span class="condition">
-                        {{ medicine[4] }}
-                    </span>
+<td>
+    {% if medicine[7] == "Pending" %}
+        <span style="
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 13px;
+            font-weight: 600;
+        ">
+            🟡 Pending
+        </span>
 
-                </td>
+    {% elif medicine[7] == "Verified" %}
+        <span style="
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 13px;
+            font-weight: 600;
+        ">
+            🟢 Verified
+        </span>
+
+    {% else %}
+        <span style="
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #fee2e2;
+            color: #991b1b;
+            font-size: 13px;
+            font-weight: 600;
+        ">
+            🔴 Rejected
+        </span>
+    {% endif %}
+</td>
+
 
 
              <!-- Actions -->

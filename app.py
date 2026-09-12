@@ -31,6 +31,16 @@ CREATE TABLE IF NOT EXISTS medicine (
 )
 """)
 
+# Medicine verification status
+try:
+    cursor.execute(
+        "ALTER TABLE medicine ADD COLUMN verification_status TEXT DEFAULT 'Pending'"
+    )
+    print("verification_status column added successfully")
+except sqlite3.OperationalError:
+    print("verification_status column already exists")
+
+
 # Existing medicine table me user_id add karna
 try:
     cursor.execute("ALTER TABLE medicine ADD COLUMN user_id INTEGER")
@@ -320,6 +330,7 @@ def logout():
 
     return redirect("/")
 
+
 # Medicines
 @app.route("/medicines")
 def medicines():
@@ -378,7 +389,6 @@ def medicines():
         medicines=medicine_data,
         search=search
     )
-
 
 
 # Uploaded images browser me dikhane ke liye
@@ -810,6 +820,95 @@ def update_request(request_id, action):
     connection.close()
 
     return redirect("/donor-requests")
+
+# =========================
+# Medicine Verification
+# =========================
+
+@app.route("/verification")
+def verification():
+
+    if "user_id" not in session:
+        return redirect("/login")
+
+    print("VERIFICATION USER ID:", session["user_id"])
+
+    connection = sqlite3.connect("medibridge.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            medicine.id,
+            medicine.medicine_name,
+            medicine.expiry_date,
+            medicine.quantity,
+            medicine.condition,
+            medicine.image_name,
+            medicine.verification_status
+        FROM medicine
+        WHERE medicine.user_id = ?
+        ORDER BY medicine.id DESC
+    """, (session["user_id"],))
+
+    medicines = cursor.fetchall()
+
+    connection.close()
+
+    return render_template(
+        "verification.html",
+        medicines=medicines
+    )
+
+
+@app.route("/verify-medicine/<int:medicine_id>/<action>")
+def verify_medicine(medicine_id, action):
+
+    if "user_id" not in session:
+        return redirect("/login")
+
+    connection = sqlite3.connect("medibridge.db")
+    cursor = connection.cursor()
+
+    # Check medicine belongs to logged-in donor
+    cursor.execute("""
+        SELECT id
+        FROM medicine
+        WHERE id = ?
+        AND user_id = ?
+    """, (
+        medicine_id,
+        session["user_id"]
+    ))
+
+    medicine = cursor.fetchone()
+
+    if medicine is None:
+        connection.close()
+        return "Medicine not found or you are not allowed to verify it."
+
+    if action == "verify":
+        new_status = "Verified"
+
+    elif action == "reject":
+        new_status = "Rejected"
+
+    else:
+        connection.close()
+        return "Invalid action."
+
+    cursor.execute("""
+        UPDATE medicine
+        SET verification_status = ?
+        WHERE id = ?
+    """, (
+        new_status,
+        medicine_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+    return redirect("/verification")
 # Run Application
 if __name__ == "__main__":
     app.run(debug=True)

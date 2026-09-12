@@ -11,41 +11,55 @@
 
 <body>
 
-    <!-- Navigation Bar -->
-    <nav>
 
-        <h2>MediBridge</h2>
+<!-- Navigation Bar -->
+<nav>
 
-        <div class="menu">
+    <h2>MediBridge</h2>
 
-            <a href="/">Home</a>
-            <a href="/donate">Donate</a>
-            <a href="/medicines">Medicines</a>
-            {% if session.get("user_id") %}
-    <a href="/#notifications">
-        🔔 Notifications
-        {% if notifications %}
-            <span class="notification-count">
-                {{ notifications|length }}
+    <div class="menu">
+
+        <a href="/">Home</a>
+
+        <a href="/donate">Donate</a>
+
+        <a href="/medicines">Medicines</a>
+
+        {% if session.get("user_id") %}
+
+            <a href="/my-requests">My Requests</a>
+
+            <a href="/donor-requests">Donor Requests</a>
+
+            <a href="/verification">🛡️ Verification</a>
+
+            <a href="/#notifications">
+                🔔 Notifications
+                {% if notifications %}
+                    <span class="notification-count">
+                        {{ notifications|length }}
+                    </span>
+                {% endif %}
+            </a>
+
+            <span>
+                👋 Welcome, {{ session.get("user_name") }}
             </span>
+
+            <a href="/logout">Logout</a>
+
+        {% else %}
+
+            <a href="/login">Login</a>
+
+            <a href="/register">Register</a>
+
         {% endif %}
-    </a>
-{% endif %}
 
-            {% if session.get("user_id") %}
+    </div>
 
-                <span>👋 Welcome, {{ session.get("user_name") }}</span>
-                <a href="/logout">Logout</a>
+</nav>
 
-            {% else %}
-
-                <a href="/login">Login</a>
-
-            {% endif %}
-
-        </div>
-
-    </nav>
 
 
     <!-- Hero Section -->

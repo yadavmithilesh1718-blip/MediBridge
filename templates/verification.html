@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Medicine Verification | MediBridge</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #222;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1200px;
+            margin: 40px auto;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            margin-top: 0;
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 950px;
+        }
+
+        th {
+            background: #f1f5f9;
+            color: #374151;
+            text-align: left;
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #fafafa;
+        }
+
+        .medicine-image {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .medicine-name {
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .condition {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 13px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .verified {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .verify-btn,
+        .reject-btn {
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .verify-btn {
+            background: #16a34a;
+            color: white;
+        }
+
+        .verify-btn:hover {
+            background: #15803d;
+        }
+
+        .reject-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .reject-btn:hover {
+            background: #b91c1c;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 50px;
+            color: #777;
+        }
+
+        @media (max-width: 700px) {
+
+            .container {
+                width: 95%;
+                margin: 25px auto;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>🛡️ Medicine Verification</h1>
+
+        <p>
+            Review and verify medicines donated by you.
+        </p>
+
+    </div>
+
+
+    <div class="table-wrapper">
+
+        {% if medicines %}
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>No.</th>
+                    <th>Image</th>
+                    <th>Medicine Name</th>
+                    <th>Expiry Date</th>
+                    <th>Quantity</th>
+                    <th>Condition</th>
+                    <th>Verification</th>
+                    <th>Action</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for medicine in medicines %}
+
+                <tr>
+
+                    <td>
+                        {{ loop.index }}
+                    </td>
+
+
+                    <td>
+
+                        {% if medicine[5] %}
+
+                        <img
+                            src="{{ url_for('uploaded_file', filename=medicine[5]) }}"
+                            class="medicine-image"
+                            alt="Medicine Image"
+                        >
+
+                        {% else %}
+
+                        No Image
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td class="medicine-name">
+                        {{ medicine[1] }}
+                    </td>
+
+
+                    <td>
+                        {{ medicine[2] }}
+                    </td>
+
+
+                    <td>
+                        {{ medicine[3] }}
+                    </td>
+
+
+                    <td>
+                        <span class="condition">
+                            {{ medicine[4] }}
+                        </span>
+                    </td>
+
+
+                    <td>
+
+                        {% if medicine[6] == "Pending" %}
+
+                            <span class="status pending">
+                                🟡 Pending
+                            </span>
+
+                        {% elif medicine[6] == "Verified" %}
+
+                            <span class="status verified">
+                                🟢 Verified
+                            </span>
+
+                        {% else %}
+
+                            <span class="status rejected">
+                                🔴 Rejected
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if medicine[6] == "Pending" %}
+
+                        <div class="actions">
+
+                            <a
+                                href="/verify-medicine/{{ medicine[0] }}/verify"
+                                class="verify-btn"
+                                onclick="return confirm('Are you sure you want to verify this medicine?');"
+                            >
+                                ✅ Verify
+                            </a>
+
+
+                            <a
+                                href="/verify-medicine/{{ medicine[0] }}/reject"
+                                class="reject-btn"
+                                onclick="return confirm('Are you sure you want to reject this medicine?');"
+                            >
+                                ❌ Reject
+                            </a>
+
+                        </div>
+
+                        {% else %}
+
+                        <span style="color:#6b7280;">
+                            No Action
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        {% else %}
+
+        <div class="empty-message">
+
+            <h3>💊 No Medicines Available</h3>
+
+            <p>
+                You have not donated any medicines yet.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
