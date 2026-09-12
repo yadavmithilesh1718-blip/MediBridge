@@ -409,6 +409,7 @@
 
 
              <!-- Actions -->
+<!-- Actions -->
 
 <td>
 
@@ -438,27 +439,28 @@
                 Delete
             </a>
 
-      {% else %}
+        {% else %}
 
-    <a
-        href="/view/{{ medicine[0] }}"
-        class="view-btn"
-    >
-        View
-    </a>
+            <a
+                href="/view/{{ medicine[0] }}"
+                class="view-btn"
+            >
+                View
+            </a>
 
-    {% if session.get("user_id") %}
+            {% if session.get("user_id") and medicine[7] == "Verified" and medicine[8] != "Expired" %}
 
-        <a
-            href="/request-medicine/{{ medicine[0] }}"
-            class="request-btn"
-        >
-            Request
-        </a>
+                <a
+                    href="/request-medicine/{{ medicine[0] }}"
+                    class="request-btn"
+                >
+                    Request
+                </a>
 
-    {% endif %}
+            {% endif %}
 
-{% endif %}
+        {% endif %}
+
     </div>
 
 </td>

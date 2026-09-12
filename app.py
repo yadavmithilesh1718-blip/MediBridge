@@ -71,6 +71,16 @@ CREATE TABLE IF NOT EXISTS medicine_requests (
 
 print("Medicine Requests table ready")
 
+# Add requested_quantity column to medicine_requests table
+try:
+    cursor.execute("""
+        ALTER TABLE medicine_requests
+        ADD COLUMN requested_quantity INTEGER DEFAULT 1
+    """)
+    print("requested_quantity column added successfully")
+except sqlite3.OperationalError:
+    print("requested_quantity column already exists")
+
 connection.commit()
 connection.close()
 
@@ -177,7 +187,6 @@ def home():
         total_quantity=total_quantity,
         notifications=notifications
     )
-
 # Donate Medicine - Login Required
 @app.route("/donate", methods=["GET", "POST"])
 def donate():
@@ -192,23 +201,82 @@ def donate():
         quantity = request.form.get("quantity")
         condition = request.form.get("condition")
 
+        # Check Medicine Name
+        if not medicine_name or not medicine_name.strip():
+            flash(
+                "Medicine name is required.",
+                "error"
+            )
+            return redirect("/donate")
+
+        # Check Quantity
+        try:
+            quantity = int(quantity)
+
+            if quantity <= 0:
+                flash(
+                    "Quantity must be greater than 0.",
+                    "error"
+                )
+                return redirect("/donate")
+
+        except (ValueError, TypeError):
+            flash(
+                "Please enter a valid quantity.",
+                "error"
+            )
+            return redirect("/donate")
+
+        # Check Medicine Condition
+        if condition != "Sealed":
+            flash(
+                "Only sealed medicines can be donated.",
+                "error"
+            )
+            return redirect("/donate")
+
+        # Check Expiry Date
+        try:
+            expiry = datetime.strptime(
+                expiry_date,
+                "%Y-%m-%d"
+            ).date()
+
+            today = datetime.today().date()
+
+            if expiry < today:
+                flash(
+                    "Expired medicine cannot be donated.",
+                    "error"
+                )
+                return redirect("/donate")
+
+        except (ValueError, TypeError):
+            flash(
+                "Please enter a valid expiry date.",
+                "error"
+            )
+            return redirect("/donate")
         # Image
         image = request.files.get("medicine_image")
 
-        image_name = ""
-
-        if image and image.filename != "":
-            image_name = image.filename
-
-            image.save(
-                os.path.join(
-                    app.config["UPLOAD_FOLDER"],
-                    image_name
-                )
+        if not image or image.filename == "":
+            flash(
+                "Medicine image is required.",
+                "error"
             )
+            return redirect("/donate")
 
-            print("Image Saved:", image_name)
+        image_name = image.filename
 
+        image.save(
+            os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                image_name
+            )
+        )
+
+        print("Image Saved:", image_name)
         # Terminal me data print
         print("Medicine Name:", medicine_name)
         print("Expiry Date:", expiry_date)
@@ -238,8 +306,14 @@ def donate():
 
         print("Medicine Saved Successfully")
 
-    return render_template("donate.html")
+        flash(
+            "Medicine donated successfully!",
+            "success"
+        )
 
+        return redirect("/medicines")
+
+    return render_template("donate.html")
 
 # Register
 @app.route("/register", methods=["GET", "POST"])
@@ -555,7 +629,7 @@ def delete_medicine(medicine_id):
     connection.commit()
     connection.close()
 
-    # Agar image hai to uploads folder se bhi delete karo
+       # Agar image hai to uploads folder se bhi delete karo
     if medicine[0]:
 
         image_path = os.path.join(
@@ -565,6 +639,10 @@ def delete_medicine(medicine_id):
 
         if os.path.exists(image_path):
             os.remove(image_path)
+
+    return redirect("/medicines")
+            
+            
 
 # Request Medicine - Login Required
 @app.route("/request-medicine/<int:medicine_id>")
@@ -578,7 +656,7 @@ def request_medicine(medicine_id):
 
     # Check medicine exists
     cursor.execute(
-        "SELECT id, medicine_name, expiry_date, user_id FROM medicine WHERE id = ?",
+        "SELECT id, medicine_name, expiry_date, user_id, verification_status FROM medicine WHERE id = ?",
         (medicine_id,)
     )
 
@@ -592,6 +670,8 @@ def request_medicine(medicine_id):
     if medicine[3] == session["user_id"]:
         connection.close()
         return "You cannot request your own medicine."
+
+   
 
     # Expired medicine ko request nahi kar sakte
     try:
@@ -609,7 +689,6 @@ def request_medicine(medicine_id):
                 "error"
             )
             return redirect("/")
-
     except (ValueError, TypeError):
         connection.close()
         flash(
@@ -617,6 +696,19 @@ def request_medicine(medicine_id):
             "error"
         )
         return redirect("/")
+
+
+     # Sirf Verified medicine request ki ja sakti hai
+    if medicine[4] != "Verified":
+         connection.close()
+         flash(
+                "This medicine is not verified and cannot be requested.",
+                "error"
+        )
+         return redirect("/")
+        
+
+   
 
     # Check if request already exists
     cursor.execute("""
@@ -665,35 +757,8 @@ def request_medicine(medicine_id):
     )
 
     return redirect("/")
-    print("Medicine Deleted:", medicine_id)
-
-    return redirect("/medicines")
-
-
    
-    # Create request
-    cursor.execute("""
-        INSERT INTO medicine_requests
-        (medicine_id, requester_id, status)
-        VALUES (?, ?, ?)
-    """, (
-        medicine_id,
-        session["user_id"],
-        "Pending"
-    ))
 
-    connection.commit()
-    connection.close()
-
-    print(
-        "Medicine Request Created:",
-        medicine_id,
-        "Requester:",
-        session["user_id"]
-    )
-
-    flash("Medicine request sent successfully!", "success")
-    return redirect("/")
 
 # My Medicine Requests
 @app.route("/my-requests")
